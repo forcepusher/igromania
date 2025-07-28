@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -15,77 +16,40 @@
     the `--base-href` argument provided to `flutter build`.
   -->
   <!--<base href="/">--> <!--Dubmest shit ever, Google-->
-  
+
   <script>
     // Auto-detect base href based on current location
     function setDynamicBaseHref() {
       const currentPath = window.location.pathname;
-      
+
       // If we're at root, use "/"
       if (currentPath === '/' || currentPath === '/index.html') {
         return '/';
       }
-      
+
       // Extract the directory path (everything up to the last slash)
-      const basePath = currentPath.endsWith('/') 
-        ? currentPath 
+      const basePath = currentPath.endsWith('/')
+        ? currentPath
         : currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-      
+
       return basePath;
     }
-    
+
     // Set the base href dynamically
     const baseElement = document.createElement('base');
     const basePath = setDynamicBaseHref();
     baseElement.href = basePath;
     document.head.appendChild(baseElement);
-    
-    // Intercept and fix service worker registration
-    if ('serviceWorker' in navigator) {
-      const originalRegister = navigator.serviceWorker.register;
-      navigator.serviceWorker.register = function(scriptURL, options) {
-        
-        // If it's the Flutter service worker, modify it
-        const scriptPath = scriptURL.toString();
-        if (scriptPath.includes('flutter_service_worker.js')) {
-          return fetch(basePath + 'flutter_service_worker.js')
-            .then(response => response.text())
-            .then(swCode => {
-              // Extract and modify RESOURCES object
-              const resourcesMatch = swCode.match(/const RESOURCES = ({[\s\S]*?});/);
-              if (resourcesMatch && basePath !== '/') {
-                const resourcesObj = JSON.parse(resourcesMatch[1]);
-                const newResources = {};
-                
-                // Update paths to include base path
-                for (const [key, value] of Object.entries(resourcesObj)) {
-                  if (key === '/') {
-                    newResources[basePath] = value;
-                  } else if (key === 'manifest.json' || key === 'index.html' || key === 'favicon.png') {
-                    // Root-level files need base path
-                    newResources[basePath + key] = value;
-                  } else {
-                    // Keep other paths as-is
-                    newResources[key] = value;
-                  }
-                }
-                
-                // Replace RESOURCES in service worker
-                swCode = swCode.replace(
-                  /const RESOURCES = {[\s\S]*?};/,
-                  `const RESOURCES = ${JSON.stringify(newResources, null, 2)};`
-                );
-              }
-              
-              // Create modified service worker
-              const blob = new Blob([swCode], { type: 'application/javascript' });
-              const swUrl = URL.createObjectURL(blob);
-              return originalRegister.call(this, swUrl, options);
-            });
-        }
-        
-        return originalRegister.call(this, scriptURL, options);
-      };
+
+    // Handle service worker registration for non-root deployments
+    if ('serviceWorker' in navigator && basePath !== '/') {
+      // Disable service worker for non-root deployments to avoid blob URL issues
+      window.addEventListener('load', () => {
+        // Unregister any existing service workers
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => registration.unregister());
+        });
+      });
     }
   </script>
 
@@ -100,12 +64,14 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>teliki</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
 </html>
