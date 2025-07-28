@@ -46,7 +46,8 @@
       navigator.serviceWorker.register = function(scriptURL, options) {
         
         // If it's the Flutter service worker, modify it
-        if (scriptURL.includes('flutter_service_worker.js')) {
+        const scriptPath = scriptURL.toString();
+        if (scriptPath.includes('flutter_service_worker.js')) {
           return fetch(basePath + 'flutter_service_worker.js')
             .then(response => response.text())
             .then(swCode => {
