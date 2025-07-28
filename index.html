@@ -41,17 +41,91 @@
     baseElement.href = basePath;
     document.head.appendChild(baseElement);
 
-    // Simple approach: just ensure the service worker URL is correct
+    // Fix ServiceWorker to use correct URLs for the current deployment path
     if ('serviceWorker' in navigator) {
       const originalRegister = navigator.serviceWorker.register;
       navigator.serviceWorker.register = function (scriptURL, options) {
-        // Convert relative URLs to absolute URLs based on base path
+
+        // If it's the Flutter service worker, we need to modify its content
+        const scriptPath = scriptURL.toString();
+        if (scriptPath.includes('flutter_service_worker.js')) {
+
+          // Fetch the original service worker and modify it
+          const swURL = basePath + 'flutter_service_worker.js';
+          return fetch(swURL)
+            .then(response => response.text())
+            .then(swCode => {
+              // Get the current origin and path
+              const currentOrigin = window.location.origin;
+              const currentFullPath = currentOrigin + basePath.slice(0, -1);
+
+              // Replace hardcoded URLs with current deployment URLs
+              let modifiedSwCode = swCode;
+
+              // Replace the RESOURCES object URLs
+              modifiedSwCode = modifiedSwCode.replace(
+                /const RESOURCES = \{([\s\S]*?)\};/,
+                (match, resourcesContent) => {
+                  try {
+                    // Extract the resources object
+                    const resourcesStr = '{' + resourcesContent + '}';
+                    const resources = JSON.parse(resourcesStr);
+                    const newResources = {};
+
+                    // Update each resource URL
+                    for (const [key, value] of Object.entries(resources)) {
+                      let newKey = key;
+
+                      // Handle root path
+                      if (key === '/') {
+                        newKey = basePath.slice(0, -1) || '/';
+                      }
+                      // Handle absolute paths that need base path
+                      else if (key.startsWith('/') && !key.startsWith(basePath)) {
+                        newKey = basePath.slice(0, -1) + key;
+                      }
+                      // Handle URLs that start with the wrong origin
+                      else if (key.startsWith('https://forcepusher.github.io/')) {
+                        newKey = key.replace('https://forcepusher.github.io/', currentFullPath + '/');
+                      }
+
+                      newResources[newKey] = value;
+                    }
+
+                    return `const RESOURCES = ${JSON.stringify(newResources, null, 2)};`;
+                  } catch (e) {
+                    console.warn('Could not parse RESOURCES:', e);
+                    return match;
+                  }
+                }
+              );
+
+              // Replace any other hardcoded URLs in the service worker
+              modifiedSwCode = modifiedSwCode.replace(
+                /https:\/\/forcepusher\.github\.io\//g,
+                currentFullPath + '/'
+              );
+
+              // Create a new service worker file using a different approach
+              // We'll create it as a data URL since blob URLs don't work
+              const encodedSW = encodeURIComponent(modifiedSwCode);
+              const dataURL = `data:application/javascript,${encodedSW}`;
+
+              console.log('Registering modified ServiceWorker with correct URLs');
+              return originalRegister.call(this, dataURL, options);
+            })
+            .catch(error => {
+              console.warn('Failed to modify service worker, using original:', error);
+              return originalRegister.call(this, swURL, options);
+            });
+        }
+
+        // For other service workers, just fix the URL
         let resolvedURL = scriptURL;
         if (typeof scriptURL === 'string' && !scriptURL.startsWith('http') && !scriptURL.startsWith('/')) {
           resolvedURL = basePath + scriptURL;
         }
 
-        console.log('Registering ServiceWorker:', resolvedURL);
         return originalRegister.call(this, resolvedURL, options);
       };
     }
