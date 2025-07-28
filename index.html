@@ -14,9 +14,9 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="/igromania/"> <!--Dubmest shit ever, Google-->
+  <!--<base href="/">--> <!--Dubmest shit ever, Google-->
   
-  <!-- <script>
+  <script>
     // Auto-detect base href based on current location
     function setDynamicBaseHref() {
       const currentPath = window.location.pathname;
@@ -36,9 +36,49 @@
     
     // Set the base href dynamically
     const baseElement = document.createElement('base');
-    baseElement.href = setDynamicBaseHref();
+    const basePath = setDynamicBaseHref();
+    baseElement.href = basePath;
     document.head.appendChild(baseElement);
-  </script> -->
+    
+    // Create a dynamic service worker wrapper
+    if ('serviceWorker' in navigator) {
+      const originalRegister = navigator.serviceWorker.register;
+      navigator.serviceWorker.register = function(scriptURL, options) {
+        // Create a wrapper service worker that fixes paths
+        const wrapperCode = `
+          const BASE_PATH = '${basePath}';
+          
+          // Import the original service worker
+          importScripts('${basePath}flutter_service_worker.js');
+          
+          // Override fetch to fix manifest path
+          const originalAddEventListener = self.addEventListener;
+          self.addEventListener = function(type, listener) {
+            if (type === 'fetch') {
+              const wrappedListener = function(event) {
+                const url = new URL(event.request.url);
+                if (url.pathname === '/manifest.json') {
+                  const newRequest = new Request(
+                    url.origin + BASE_PATH + 'manifest.json',
+                    event.request
+                  );
+                  event = { ...event, request: newRequest };
+                }
+                return listener(event);
+              };
+              return originalAddEventListener.call(this, type, wrappedListener);
+            }
+            return originalAddEventListener.call(this, type, listener);
+          };
+        `;
+        
+        const blob = new Blob([wrapperCode], { type: 'application/javascript' });
+        const wrapperURL = URL.createObjectURL(blob);
+        
+        return originalRegister.call(this, wrapperURL, options);
+      };
+    }
+  </script>
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
