@@ -14,7 +14,31 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <!--<base href="/">-->
+  <!--<base href="/">--> <!--Dubmest shit ever, Google-->
+  
+  <script>
+    // Auto-detect base href based on current location
+    function setDynamicBaseHref() {
+      const currentPath = window.location.pathname;
+      
+      // If we're at root, use "/"
+      if (currentPath === '/' || currentPath === '/index.html') {
+        return '/';
+      }
+      
+      // Extract the directory path (everything up to the last slash)
+      const basePath = currentPath.endsWith('/') 
+        ? currentPath 
+        : currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+      
+      return basePath;
+    }
+    
+    // Set the base href dynamically
+    const baseElement = document.createElement('base');
+    baseElement.href = setDynamicBaseHref();
+    document.head.appendChild(baseElement);
+  </script>
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -24,16 +48,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="teliki">
-  <!--<link rel="apple-touch-icon" href="icons/Icon-192.png">-->
-  <!--<link rel="apple-touch-icon" href="./icons/Icon-192.png">-->
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <!--<link rel="icon" type="image/png" href="favicon.png"/>-->
-  <!--<link rel="icon" type="image/png" href="./favicon.png"/>-->
+  <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>teliki</title>
-  <!--<link rel="manifest" href="manifest.json">-->
-  <!--<link rel="manifest" href="./manifest.json">-->
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
