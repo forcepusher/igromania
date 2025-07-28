@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -16,119 +15,29 @@
     the `--base-href` argument provided to `flutter build`.
   -->
   <!--<base href="/">--> <!--Dubmest shit ever, Google-->
-
+  
   <script>
     // Auto-detect base href based on current location
     function setDynamicBaseHref() {
       const currentPath = window.location.pathname;
-
+      
       // If we're at root, use "/"
       if (currentPath === '/' || currentPath === '/index.html') {
         return '/';
       }
-
+      
       // Extract the directory path (everything up to the last slash)
-      const basePath = currentPath.endsWith('/')
-        ? currentPath
+      const basePath = currentPath.endsWith('/') 
+        ? currentPath 
         : currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-
+      
       return basePath;
     }
-
+    
     // Set the base href dynamically
     const baseElement = document.createElement('base');
-    const basePath = setDynamicBaseHref();
-    baseElement.href = basePath;
+    baseElement.href = setDynamicBaseHref();
     document.head.appendChild(baseElement);
-
-    // Fix ServiceWorker to use correct URLs for the current deployment path
-    if ('serviceWorker' in navigator) {
-      const originalRegister = navigator.serviceWorker.register;
-      navigator.serviceWorker.register = function (scriptURL, options) {
-
-        // If it's the Flutter service worker, we need to modify its content
-        const scriptPath = scriptURL.toString();
-        if (scriptPath.includes('flutter_service_worker.js')) {
-
-          // Fetch the original service worker and modify it
-          const swURL = basePath + 'flutter_service_worker.js';
-          return fetch(swURL)
-            .then(response => response.text())
-            .then(swCode => {
-              // Get the current origin and path
-              const currentOrigin = window.location.origin;
-              const currentFullPath = currentOrigin + basePath.slice(0, -1);
-
-              // Replace hardcoded URLs with current deployment URLs
-              let modifiedSwCode = swCode;
-
-              // Replace the RESOURCES object URLs
-              modifiedSwCode = modifiedSwCode.replace(
-                /const RESOURCES = \{([\s\S]*?)\};/,
-                (match, resourcesContent) => {
-                  try {
-                    // Extract the resources object
-                    const resourcesStr = '{' + resourcesContent + '}';
-                    const resources = JSON.parse(resourcesStr);
-                    const newResources = {};
-
-                    // Update each resource URL
-                    for (const [key, value] of Object.entries(resources)) {
-                      let newKey = key;
-
-                      // Handle root path
-                      if (key === '/') {
-                        newKey = basePath.slice(0, -1) || '/';
-                      }
-                      // Handle absolute paths that need base path
-                      else if (key.startsWith('/') && !key.startsWith(basePath)) {
-                        newKey = basePath.slice(0, -1) + key;
-                      }
-                      // Handle URLs that start with the wrong origin
-                      else if (key.startsWith('https://forcepusher.github.io/')) {
-                        newKey = key.replace('https://forcepusher.github.io/', currentFullPath + '/');
-                      }
-
-                      newResources[newKey] = value;
-                    }
-
-                    return `const RESOURCES = ${JSON.stringify(newResources, null, 2)};`;
-                  } catch (e) {
-                    console.warn('Could not parse RESOURCES:', e);
-                    return match;
-                  }
-                }
-              );
-
-              // Replace any other hardcoded URLs in the service worker
-              modifiedSwCode = modifiedSwCode.replace(
-                /https:\/\/forcepusher\.github\.io\//g,
-                currentFullPath + '/'
-              );
-
-              // Create a new service worker file using a different approach
-              // We'll create it as a data URL since blob URLs don't work
-              const encodedSW = encodeURIComponent(modifiedSwCode);
-              const dataURL = `data:application/javascript,${encodedSW}`;
-
-              console.log('Registering modified ServiceWorker with correct URLs');
-              return originalRegister.call(this, dataURL, options);
-            })
-            .catch(error => {
-              console.warn('Failed to modify service worker, using original:', error);
-              return originalRegister.call(this, swURL, options);
-            });
-        }
-
-        // For other service workers, just fix the URL
-        let resolvedURL = scriptURL;
-        if (typeof scriptURL === 'string' && !scriptURL.startsWith('http') && !scriptURL.startsWith('/')) {
-          resolvedURL = basePath + scriptURL;
-        }
-
-        return originalRegister.call(this, resolvedURL, options);
-      };
-    }
   </script>
 
   <meta charset="UTF-8">
@@ -142,14 +51,12 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>teliki</title>
   <link rel="manifest" href="manifest.json">
 </head>
-
 <body>
   <script src="flutter_bootstrap.js" async></script>
 </body>
-
 </html>
