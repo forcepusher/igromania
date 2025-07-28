@@ -14,9 +14,9 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <!--<base href="/">--> <!--Dubmest shit ever, Google-->
-
-  <script>
+  <base href="/igromania/"> <!--Dubmest shit ever, Google-->
+  
+  <!-- <script>
     // Auto-detect base href based on current location
     function setDynamicBaseHref() {
       const currentPath = window.location.pathname;
@@ -36,27 +36,9 @@
     
     // Set the base href dynamically
     const baseElement = document.createElement('base');
-    const basePath = setDynamicBaseHref();
-    baseElement.href = basePath;
+    baseElement.href = setDynamicBaseHref();
     document.head.appendChild(baseElement);
-    
-    // Fix service worker registration path
-    window.addEventListener('load', function() {
-      if ('serviceWorker' in navigator) {
-        // Override the service worker registration with correct path
-        const originalRegister = navigator.serviceWorker.register;
-        navigator.serviceWorker.register = function(scriptURL, options) {
-          // If it's a relative path, make it relative to our base
-          if (!scriptURL.startsWith('http') && !scriptURL.startsWith('/')) {
-            scriptURL = basePath + scriptURL;
-          } else if (scriptURL.startsWith('./')) {
-            scriptURL = basePath + scriptURL.substring(2);
-          }
-          return originalRegister.call(this, scriptURL, options);
-        };
-      }
-    });
-  </script>
+  </script> -->
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
