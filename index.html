@@ -1,62 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Igromania</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #161a1a;
+            font-family: Arial, sans-serif;
+        }
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <!--<base href="/">--> <!--Dubmest shit ever, Google-->
-  
-  <script>
-    // Auto-detect base href based on current location
-    function setDynamicBaseHref() {
-      const currentPath = window.location.pathname;
-      
-      // If we're at root, use "/"
-      if (currentPath === '/' || currentPath === '/index.html') {
-        return '/';
-      }
-      
-      // Extract the directory path (everything up to the last slash)
-      const basePath = currentPath.endsWith('/') 
-        ? currentPath 
-        : currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-      
-      return basePath;
-    }
-    
-    // Set the base href dynamically
-    const baseElement = document.createElement('base');
-    baseElement.href = setDynamicBaseHref();
-    document.head.appendChild(baseElement);
-  </script>
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="teliki">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>teliki</title>
-  <link rel="manifest" href="manifest.json">
+        .applicationContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+    </style>
 </head>
+
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+    <div class="applicationContainer">
+        <iframe id="videoPlayerFrame"
+            src="https://rutube.ru/play/embed/9ae21e22fa04cc803caa5f16874918c2"
+            frameBorder="0" allow="clipboard-write; autoplay" webkitAllowFullScreen mozallowfullscreen allowFullScreen
+            style="width: 100%; height: 100%; border: none;">
+        </iframe>
+    </div>
+
+    <script>
+        const videoPlayerFrame = document.getElementById('videoPlayerFrame');
+
+        const hideControlsCommand = {type: 'player:hideControls', data: {}};
+        const playCommand = {type: 'player:play', data: {}}
+
+        function sendCommandToVideoPlayer(command) {
+            console.log("Send Command:", command);
+            videoPlayerFrame.contentWindow.postMessage(JSON.stringify(command), '*');
+        }
+
+        videoPlayerFrame.onload = function () {
+            sendCommandToVideoPlayer(hideControlsCommand);
+            sendCommandToVideoPlayer(playCommand);
+        };
+    </script>
 </body>
+
 </html>
