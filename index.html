@@ -53,11 +53,13 @@
     <script>
         const videoPlayerFrame = document.getElementById('videoPlayerFrame');
 
+        const qualitySetting = { quality:'1080' };
+        
         const hideControlsCommand = { type: 'player:hideControls', data: {} };
         const playCommand = { type: 'player:play', data: {} };
-        const setAutoQualityCommand = { type: 'player:changeQuality', data: { quality:'auto' } }; 
+        const setAutoQualityCommand = { type: 'player:changeQuality', data: qualitySetting }; 
         function createChangeVideoCommand(videoId) {
-            return { type: 'player:changeVideo', data: { id: videoId, params: { quality:'auto' } } };
+            return { type: 'player:changeVideo', data: { id: videoId, params: qualitySetting } };
         };
 
         function sendCommandToVideoPlayer(command) {
