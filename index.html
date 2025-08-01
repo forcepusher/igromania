@@ -45,8 +45,7 @@
 <body>
     <div class="windowViewport">
         <div class="letterboxViewportConstraint">
-            <iframe id="videoPlayerFrame" src="https://rutube.ru/play/embed/9ae21e22fa04cc803caa5f16874918c2"
-                frameBorder="0" allow="clipboard-write; autoplay">
+            <iframe id="videoPlayerFrame" src="https://rutube.ru/play/embed/9ae21e22fa04cc803caa5f16874918c2" allow="autoplay">
             </iframe>
         </div>
     </div>
@@ -55,17 +54,40 @@
         const videoPlayerFrame = document.getElementById('videoPlayerFrame');
 
         const hideControlsCommand = { type: 'player:hideControls', data: {} };
-        const playCommand = { type: 'player:play', data: {} }
+        const playCommand = { type: 'player:play', data: {} };
+        const setAutoQualityCommand = { type: 'player:changeQuality', data: { quality:'auto' } }; 
+        function createChangeVideoCommand(videoId) {
+            return { type: 'player:changeVideo', data: { id: videoId, params: { quality:'auto' } } };
+        };
 
         function sendCommandToVideoPlayer(command) {
             console.log("Send Command:", command);
             videoPlayerFrame.contentWindow.postMessage(JSON.stringify(command), '*');
-        }
-
-        videoPlayerFrame.onload = function () {
-            sendCommandToVideoPlayer(hideControlsCommand);
-            sendCommandToVideoPlayer(playCommand);
         };
+
+        // videoPlayerFrame.addEventListener('load', function (event) {
+        //     console.log('PLAYER LOAD EVENT FIRED');
+            
+        // });
+
+        window.addEventListener('message', function(event) {
+            var message = JSON.parse(event.data);
+            console.log(message.type);
+
+            switch (message.type) {
+                case 'player:ready':
+                  sendCommandToVideoPlayer(hideControlsCommand);
+                  sendCommandToVideoPlayer(playCommand);
+                  sendCommandToVideoPlayer(setAutoQualityCommand);
+                  break;
+                case 'player:playComplete':
+                  sendCommandToVideoPlayer(createChangeVideoCommand('4435f134b180a6024efb9d75fdf19047'));
+                  break;
+                case 'player:changeState':
+                  console.log(message.data.state);
+                  break;
+            };
+        });
     </script>
 </body>
 
