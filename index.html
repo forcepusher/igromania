@@ -53,11 +53,11 @@
     <script>
         const videoPlayerFrame = document.getElementById('videoPlayerFrame');
 
-        const qualitySetting = { quality:'1080' };
+        const qualitySetting = { quality:'144' };
         
         const hideControlsCommand = { type: 'player:hideControls', data: {} };
         const playCommand = { type: 'player:play', data: {} };
-        const setAutoQualityCommand = { type: 'player:changeQuality', data: qualitySetting }; 
+        const setQualityCommand = { type: 'player:changeQuality', data: qualitySetting }; 
         function createChangeVideoCommand(videoId) {
             return { type: 'player:changeVideo', data: { id: videoId, params: qualitySetting } };
         };
@@ -77,16 +77,18 @@
             console.log(message.type);
 
             switch (message.type) {
-                case 'player:ready':
+                case 'player:init':
                   sendCommandToVideoPlayer(hideControlsCommand);
-                  sendCommandToVideoPlayer(playCommand);
-                  sendCommandToVideoPlayer(setAutoQualityCommand);
                   break;
                 case 'player:playComplete':
                   sendCommandToVideoPlayer(createChangeVideoCommand('4435f134b180a6024efb9d75fdf19047'));
                   break;
                 case 'player:changeState':
                   console.log(message.data.state);
+                  break;
+                case 'player:qualityList':
+                  sendCommandToVideoPlayer(setQualityCommand);
+                  sendCommandToVideoPlayer(playCommand);
                   break;
             };
         });
