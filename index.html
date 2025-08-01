@@ -2,97 +2,110 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Igromania</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: black;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Igromania</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: black;
+    }
 
-        .windowViewport {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
+    .windowViewport {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .letterboxViewportConstraint {
-            width: 100%;
-            height: 100%;
-            max-width: calc(100vh * 16 / 9);
-            max-height: calc(100vw * 9 / 16);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+    .letterboxViewportConstraint {
+      width: 100%;
+      height: 100%;
+      max-width: calc(100vh * 16 / 9);
+      max-height: calc(100vw * 9 / 16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
 
-        #videoPlayerFrame {
-            width: 100%;
-            height: 800%;
-            border: none;
-        }
-    </style>
+    #videoPlayerFrame {
+      width: 100%;
+      height: 800%;
+      border: none;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="windowViewport">
-        <div class="letterboxViewportConstraint">
-            <iframe id="videoPlayerFrame" src="https://rutube.ru/play/embed/9ae21e22fa04cc803caa5f16874918c2" allow="autoplay">
-            </iframe>
-        </div>
+  <div class="windowViewport">
+    <div class="letterboxViewportConstraint">
+      <iframe id="videoPlayerFrame" allow="autoplay">
+      </iframe>
     </div>
+  </div>
 
-    <script>
-        const videoPlayerFrame = document.getElementById('videoPlayerFrame');
+  <script type="module">
+    const videoPlayerFrame = document.getElementById('videoPlayerFrame');
 
-        const qualitySetting = { quality:'1080' };
-        
-        const hideControlsCommand = { type: 'player:hideControls', data: {} };
-        const playCommand = { type: 'player:play', data: {} };
-        const setQualityCommand = { type: 'player:changeQuality', data: qualitySetting }; 
-        function createChangeVideoCommand(videoId) {
-            return { type: 'player:changeVideo', data: { id: videoId, params: qualitySetting } };
-        };
+    async function fetchPlaylist() {
+      try {
+        const response = await fetch('playlist.json');
+        const playlist = await response.json();
+        console.log('Fetched playlist:', playlist);
+        return playlist;
+      } catch (error) {
+        console.error('Error fetching playlist:', error);
+        return [];
+      }
+    }
 
-        function sendCommandToVideoPlayer(command) {
-            console.log("Send Command:", command);
-            videoPlayerFrame.contentWindow.postMessage(JSON.stringify(command), '*');
-        };
+    const playlist = await fetchPlaylist();
+    let currentVideoIndex = 0;
 
-        // videoPlayerFrame.addEventListener('load', function (event) {
-        //     console.log('PLAYER LOAD EVENT FIRED');
-            
-        // });
+    const qualitySetting = { quality: '1080' };
 
-        window.addEventListener('message', function(event) {
-            var message = JSON.parse(event.data);
-            console.log(message.type);
+    const hideControlsCommand = { type: 'player:hideControls', data: {} };
+    const playCommand = { type: 'player:play', data: {} };
+    const setQualityCommand = { type: 'player:changeQuality', data: qualitySetting };
+    function createChangeVideoCommand(videoId) {
+      return { type: 'player:changeVideo', data: { id: videoId, params: qualitySetting } };
+    };
 
-            switch (message.type) {
-                case 'player:init':
-                  sendCommandToVideoPlayer(hideControlsCommand);
-                  break;
-                case 'player:playComplete':
-                  sendCommandToVideoPlayer(createChangeVideoCommand('4435f134b180a6024efb9d75fdf19047'));
-                  break;
-                case 'player:changeState':
-                  console.log(message.data.state);
-                  break;
-                case 'player:qualityList':
-                  sendCommandToVideoPlayer(setQualityCommand);
-                  sendCommandToVideoPlayer(playCommand);
-                  break;
-            };
-        });
-    </script>
+    function sendCommandToVideoPlayer(command) {
+      console.log("Send Command:", command);
+      videoPlayerFrame.contentWindow.postMessage(JSON.stringify(command), '*');
+    };
+
+    window.addEventListener('message', function (event) {
+      var message = JSON.parse(event.data);
+      console.log(message.type);
+
+      switch (message.type) {
+        case 'player:init':
+          sendCommandToVideoPlayer(hideControlsCommand);
+          break;
+        case 'player:qualityList':
+          sendCommandToVideoPlayer(setQualityCommand);
+          sendCommandToVideoPlayer(playCommand);
+          break;
+        case 'player:playComplete':
+          currentVideoIndex = (currentVideoIndex + 1) % playlist.length;
+          sendCommandToVideoPlayer(createChangeVideoCommand(playlist[currentVideoIndex]));
+          break;
+        case 'player:changeState':
+          console.log(message.data.state);
+          break;
+      };
+    });
+
+    videoPlayerFrame.src = 'https://rutube.ru/play/embed/' + playlist[currentVideoIndex];
+  </script>
 </body>
 
 </html>
