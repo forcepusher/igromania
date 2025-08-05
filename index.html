@@ -102,8 +102,23 @@
     const videoPlayerFrame = document.getElementById('videoPlayerFrame');
     const videoTransitionImage = document.getElementById('videoTransitionImage');
 
+    var transitionTimer;
     function setTransitionState(newState) {
-        
+      if (newState) {
+        if (transitionTimer) {
+          clearTimeout(transitionTimer);
+          transitionTimer = null;
+        }
+        videoTransitionImage.style.display = 'flex';
+        videoTransitionImage.classList.remove('fade-out');
+      }
+      else {
+        videoTransitionImage.classList.add('fade-out');
+        transitionTimer = setTimeout(() => {
+          videoTransitionImage.style.display = 'none';
+          transitionTimer = null;
+        }, 1000);
+      }
     }
 
     async function fetchPlaylist() {
@@ -119,7 +134,7 @@
     }
 
     const playlist = await fetchPlaylist();
-    let currentVideoIndex = 0;
+    var currentVideoIndex = 0;
 
     const qualitySetting = { quality: '1080' };
 
@@ -148,27 +163,15 @@
           sendCommandToVideoPlayer(playCommand);
           break;
         case 'player:playComplete':
-          videoTransitionImage.style.display = 'flex';
-          //videoTransitionImage.classList.remove('fade-out');
-
+          setTransitionState(true);
           currentVideoIndex = (currentVideoIndex + 1) % playlist.length;
           sendCommandToVideoPlayer(createChangeVideoCommand(playlist[currentVideoIndex]));
           break;
-        // case 'player:playStart':
-        //   videoTransitionImage.classList.add('fade-out');
-        //     setTimeout(() => {
-        //     videoTransitionImage.style.display = 'none';
-        //   }, 1000);
-        //   break;
         case 'player:changeState':
           console.log(message.data.state);
           switch (message.data.state) {
             case 'playing':
-              //videoTransitionImage.classList.add('fade-out');
-              // setTimeout(() => {
-              //   videoTransitionImage.style.display = 'none';
-              // }, 1000);
-              videoTransitionImage.style.display = 'none';
+              setTransitionState(false);
               break;
           }
           break;
