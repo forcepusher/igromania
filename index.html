@@ -160,7 +160,7 @@
 
     async function fetchConfig() {
       try {
-        const response = await fetch('config.json');
+        const response = await fetch('config.json', { cache: 'no-store' });
         const config = await response.json();
         console.log('Fetched config:', config);
         return config;
@@ -171,7 +171,7 @@
     }
 
     const config = await fetchConfig();
-    
+
     var currentVideoIndex = 0;
     const qualitySetting = { quality: '1080' };
 
