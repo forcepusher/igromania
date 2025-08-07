@@ -171,23 +171,8 @@
     }
 
     const config = await fetchConfig();
-
-    // async function fetchTransitionVideos() {
-    //   try {
-    //     for (const transitionVideoLink of transitionVideoLinks) {
-    //       const response = await fetch(transitionVideoLink);
-    //       response.
-    //     }
-    //   } catch (error) {
-    //     console.error('Error preloading transition videos:', error);
-    //   }
-    // }
-
-    // const transitionVideoLinks = config.transitions;
-    // var transitionVideos;
-
+    
     var currentVideoIndex = 0;
-
     const qualitySetting = { quality: '1080' };
 
     const hideControlsCommand = { type: 'player:hideControls', data: {} };
