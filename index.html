@@ -41,7 +41,7 @@
 
     #video-player-frame {
       width: 100%;
-      height: 800%;
+      height: 100%; /* set it to 800% when done testing */
       border: none;
     }
 
@@ -170,6 +170,7 @@
         return config;
       } catch (error) {
         console.error('Error fetching config:', error);
+        // TODO: Gracefully terminate the app and display an error
         return {};
       }
     }
@@ -197,7 +198,7 @@
 
       switch (message.type) {
         case 'player:init':
-          sendCommandToVideoPlayer(hideControlsCommand);
+          //sendCommandToVideoPlayer(hideControlsCommand); // Enable it back when done testing
           break;
         case 'player:qualityList':
           sendCommandToVideoPlayer(setQualityCommand);
