@@ -13,7 +13,7 @@
       background: black;
     }
 
-    .windowViewport {
+    .window-viewport {
       width: 100vw;
       height: 100vh;
       display: flex;
@@ -23,7 +23,7 @@
       overflow: hidden;
     }
 
-    .letterboxViewportConstraint {
+    .letterbox-viewport-constraint {
       width: 100%;
       height: 100%;
       max-width: calc(100vh * 16 / 9);
@@ -35,13 +35,13 @@
       position: relative;
     }
 
-    #videoPlayerFrame {
+    #video-player-frame {
       width: 100%;
       height: 800%;
       border: none;
     }
 
-    .videoTransitionImage {
+    .video-transition {
       position: absolute;
       top: 0;
       left: 0;
@@ -59,11 +59,11 @@
       transition: opacity 1s ease-out;
     }
 
-    .videoTransitionImage.fade-out {
+    .video-transition.fade-out {
       opacity: 0;
     }
 
-    .videoTransitionImage svg {
+    .video-transition svg {
       width: 50%;
       height: auto;
     }
@@ -102,11 +102,11 @@
 </head>
 
 <body>
-  <div class="windowViewport">
-    <div class="letterboxViewportConstraint">
-      <iframe id="videoPlayerFrame" allow="autoplay">
+  <div class="window-viewport">
+    <div class="letterbox-viewport-constraint">
+      <iframe id="video-player-frame" allow="autoplay">
       </iframe>
-      <div id="videoTransitionImage" class="videoTransitionImage">
+      <div id="video-transition" class="video-transition">
         <svg width="86" height="28" viewBox="0 0 86 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M80.1137 12.4608C79.977 12.8039 79.8403 13.1127 79.7036 13.2843C79.396 13.4215 79.0542 13.4559 78.7466 13.3872C75.6022 12.3921 75.0212 10.4019 75.2604 8.34311C76.0123 9.02939 76.6959 9.71566 77.4478 10.3676V9.57841C77.2086 9.33821 77.0035 9.13233 76.7643 8.92645C76.6275 8.61762 76.6959 8.20586 76.901 7.96566C77.7212 9.50978 78.7808 11.0196 80.1137 12.4608ZM85.3088 5.28919C85.0354 5.32351 84.8303 5.35782 84.5227 5.39213C84.4885 5.97547 84.4543 6.59311 84.4202 7.17645C83.1897 7.3137 81.7543 5.8039 80.6264 4.25978C77.9263 1.20586 76.5934 1.3088 75.0212 4.67155C73.3464 4.87743 72.8679 6.0441 72.6629 7.17645H72.116C72.0477 7.89704 71.9793 8.65194 71.911 9.37253C72.116 9.40684 72.3895 9.47547 72.5945 9.50978C72.6629 10.848 73.7908 12.1176 75.944 13.3872V13.7304C73.3123 16.8872 70.6805 20.0441 68.083 23.201C68.1855 23.8872 68.2881 24.5392 68.4248 25.2255C69.4843 25.5686 70.2362 26.0833 70.8173 26.701C73.3123 24.8137 75.568 22.6519 77.6529 20.3186C77.6187 20.147 77.5162 19.8382 77.482 19.6666C76.6617 20.5588 75.9098 21.5539 75.0895 22.4461C74.987 22.3088 74.8845 22.1715 74.7819 22.0343C75.1579 21.6225 75.568 21.1764 75.944 20.7647C76.0465 20.4902 75.8414 20.0784 75.944 19.7696C76.9351 18.6372 77.7896 17.6421 79.0884 14.8284C79.2934 14.8627 79.601 14.897 79.8061 14.9314C79.9428 14.5539 80.0454 14.1764 80.1821 13.799C80.3871 13.799 80.558 13.7647 80.7631 13.7647C81.7201 15.9608 81.5834 21.1764 81.6175 25.2941C81.7543 25.2941 81.9251 25.3284 82.0619 25.3284C82.1986 24.0588 82.3011 22.8235 82.4378 21.5539H82.9505C82.9163 22.9264 82.848 24.299 82.8138 25.7059C83.4632 25.6715 84.0784 25.6372 84.7278 25.6029C86.0949 16.9215 86.4708 10.4706 85.3088 5.28919Z"
@@ -133,8 +133,8 @@
   </div>
 
   <script type="module">
-    const videoPlayerFrame = document.getElementById('videoPlayerFrame');
-    const videoTransitionImage = document.getElementById('videoTransitionImage');
+    const videoPlayerFrame = document.getElementById('video-player-frame');
+    const videoTransitionImage = document.getElementById('video-transition');
     const loadingSpinner = document.getElementById('loading-spinner');
 
     var transitionTimer;
@@ -158,19 +158,34 @@
       }
     }
 
-    async function fetchPlaylist() {
+    async function fetchConfig() {
       try {
-        const response = await fetch('playlist.json');
-        const playlist = await response.json();
-        console.log('Fetched playlist:', playlist);
-        return playlist;
+        const response = await fetch('config.json');
+        const config = await response.json();
+        console.log('Fetched config:', config);
+        return config;
       } catch (error) {
-        console.error('Error fetching playlist:', error);
-        return [];
+        console.error('Error fetching config:', error);
+        return {};
       }
     }
 
-    const playlist = await fetchPlaylist();
+    const config = await fetchConfig();
+
+    // async function fetchTransitionVideos() {
+    //   try {
+    //     for (const transitionVideoLink of transitionVideoLinks) {
+    //       const response = await fetch(transitionVideoLink);
+    //       response.
+    //     }
+    //   } catch (error) {
+    //     console.error('Error preloading transition videos:', error);
+    //   }
+    // }
+
+    // const transitionVideoLinks = config.transitions;
+    // var transitionVideos;
+
     var currentVideoIndex = 0;
 
     const qualitySetting = { quality: '1080' };
@@ -201,8 +216,8 @@
           break;
         case 'player:playComplete':
           setTransitionState(true);
-          currentVideoIndex = (currentVideoIndex + 1) % playlist.length;
-          sendCommandToVideoPlayer(createChangeVideoCommand(playlist[currentVideoIndex]));
+          currentVideoIndex = (currentVideoIndex + 1) % config.playlist.length;
+          sendCommandToVideoPlayer(createChangeVideoCommand(config.playlist[currentVideoIndex]));
           break;
         case 'player:changeState':
           console.log(message.data.state);
@@ -215,7 +230,7 @@
       };
     });
 
-    videoPlayerFrame.src = 'https://rutube.ru/play/embed/' + playlist[currentVideoIndex];
+    videoPlayerFrame.src = 'https://rutube.ru/play/embed/' + config.playlist[currentVideoIndex];
   </script>
 </body>
 
