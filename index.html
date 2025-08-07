@@ -3,8 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -41,7 +42,8 @@
 
     #video-player-frame {
       width: 100%;
-      height: 100%; /* set it to 800% when done testing */
+      height: 100%;
+      /* set it to 800% when done testing */
       border: none;
     }
 
@@ -221,6 +223,27 @@
     });
 
     videoPlayerFrame.src = 'https://rutube.ru/play/embed/' + config.playlist[currentVideoIndex];
+
+    //// Input blocking - clean and simple
+    //const allowedKeys = ['F5', 'F12', 'Escape'];
+
+    function blockInput(event) {
+      // // Allow browser shortcuts
+      // if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+      // // Allow specific keys
+      // if (event.type.startsWith('key') && allowedKeys.includes(event.key)) return;
+
+      // // Allow right-click for debugging
+      // if (event.button === 2) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    // Block all input events
+    ['keydown', 'keyup', 'click', 'mousedown', 'mouseup', 'dblclick', 'wheel', 'touchstart', 'touchend', 'touchmove']
+      .forEach(type => document.addEventListener(type, blockInput, { capture: true, passive: false }));
   </script>
 </body>
 
