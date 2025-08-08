@@ -51,6 +51,10 @@
       height: 100%;
       cursor: pointer;
       user-select: none;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .control-zone-left {
@@ -58,7 +62,7 @@
     }
 
     .control-zone-center {
-      flex: 2;
+      flex: 4;
     }
 
     .control-zone-right {
@@ -88,7 +92,7 @@
       gap: 20px;
       visibility: visible;
       opacity: 1;
-      transition: opacity 1s ease-out;
+      transition: opacity 0.5s ease-out;
     }
 
     .video-transition.fade-out {
@@ -130,6 +134,41 @@
         left: 100%;
       }
     }
+
+    .seek-icon,
+    .pause-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 15;
+    }
+
+    .seek-icon.show,
+    .pause-icon.show {
+      opacity: 1;
+    }
+
+    .seek-icon svg,
+    .pause-icon svg {
+      width: 40px;
+      height: 40px;
+      fill: white;
+      display: block;
+    }
+
+    .pause-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
   </style>
 </head>
 
@@ -139,9 +178,27 @@
       <iframe id="video-player-frame" allow="autoplay">
       </iframe>
       <div class="video-controls-overlay">
-        <div id="control-zone-left" class="control-zone control-zone-left"></div>
+        <div id="control-zone-left" class="control-zone control-zone-left">
+          <div id="seek-left-icon" class="seek-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M11,18V6L3,12L11,18Z M18,6V18L10,12L18,6Z" />
+            </svg>
+          </div>
+        </div>
         <div id="control-zone-center" class="control-zone control-zone-center"></div>
-        <div id="control-zone-right" class="control-zone control-zone-right"></div>
+        <div id="control-zone-right" class="control-zone control-zone-right">
+          <div id="seek-right-icon" class="seek-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M13,6V18L21,12L13,6Z M6,18V6L14,12L6,18Z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div id="pause-icon" class="pause-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+        </svg>
       </div>
       <div id="video-transition" class="video-transition">
         <svg width="86" height="28" viewBox="0 0 86 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -174,8 +231,15 @@
     const videoPlayerFrame = document.getElementById('video-player-frame');
     const videoTransitionImage = document.getElementById('video-transition');
     const loadingSpinner = document.getElementById('loading-spinner');
+    const seekLeftIcon = document.getElementById('seek-left-icon');
+    const seekRightIcon = document.getElementById('seek-right-icon');
+    const pauseIcon = document.getElementById('pause-icon');
 
     var transitionTimer;
+    var seekLeftIconTimer;
+    var seekRightIconTimer;
+    var pauseIconTimer;
+
     function setTransitionState(newState) {
       if (newState) {
         if (transitionTimer) {
@@ -183,16 +247,57 @@
           transitionTimer = null;
         }
         videoTransitionImage.style.display = 'flex';
+        videoTransitionImage.style.pointerEvents = 'auto';
         videoTransitionImage.classList.remove('fade-out');
         loadingSpinner.style.visibility = 'visible';
       }
       else {
         videoTransitionImage.classList.add('fade-out');
+        videoTransitionImage.style.pointerEvents = 'none';
         transitionTimer = setTimeout(() => {
           videoTransitionImage.style.display = 'none';
           transitionTimer = null;
-        }, 1000);
+        }, 500);
         loadingSpinner.style.visibility = 'hidden';
+      }
+    }
+
+    function showSeekLeftIcon() {
+      if (seekLeftIconTimer) {
+        clearTimeout(seekLeftIconTimer);
+        seekLeftIconTimer = null;
+      }
+
+      seekLeftIcon.classList.add('show');
+      seekLeftIconTimer = setTimeout(() => {
+        seekLeftIcon.classList.remove('show');
+        seekLeftIconTimer = null;
+      }, 500);
+    }
+
+    function showSeekRightIcon() {
+      if (seekRightIconTimer) {
+        clearTimeout(seekRightIconTimer);
+        seekRightIconTimer = null;
+      }
+
+      seekRightIcon.classList.add('show');
+      seekRightIconTimer = setTimeout(() => {
+        seekRightIcon.classList.remove('show');
+        seekRightIconTimer = null;
+      }, 500);
+    }
+
+    function updatePauseIcon() {
+      if (pauseIconTimer) {
+        clearTimeout(pauseIconTimer);
+        pauseIconTimer = null;
+      }
+
+      if (!isPlaying) {
+        pauseIcon.classList.add('show');
+      } else {
+        pauseIcon.classList.remove('show');
       }
     }
 
@@ -253,9 +358,11 @@
             case 'playing':
               setTransitionState(false);
               isPlaying = true;
+              updatePauseIcon();
               break;
             case 'pause':
               isPlaying = false;
+              updatePauseIcon();
               break;
           }
           break;
@@ -274,10 +381,12 @@
 
     function seekBackward() {
       sendCommandToVideoPlayer(seekBackCommand);
+      showSeekLeftIcon();
     }
 
     function seekForward() {
       sendCommandToVideoPlayer(seekForwardCommand);
+      showSeekRightIcon();
     }
 
     document.getElementById('control-zone-left').addEventListener('click', seekBackward);
@@ -302,20 +411,15 @@
     document.addEventListener('keydown', function (event) {
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        sendCommandToVideoPlayer(seekBackCommand);
+        seekBackward();
       } else if (event.key === 'ArrowRight') {
         event.preventDefault();
-        sendCommandToVideoPlayer(seekForwardCommand);
+        seekForward();
       } else if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        if (isPlaying) {
-          sendCommandToVideoPlayer(pauseCommand);
-        } else {
-          sendCommandToVideoPlayer(playCommand);
-        }
+        togglePlayPause();
       }
-    }
-    );
+    });
   </script>
 </body>
 
