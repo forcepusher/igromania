@@ -5,11 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-
   <title>Igromania</title>
   <style>
     body {
@@ -182,14 +178,18 @@
     const config = await fetchConfig();
 
     var currentVideoIndex = 0;
+    var isPlaying = false;
     const qualitySetting = { quality: '1080' };
 
     const hideControlsCommand = { type: 'player:hideControls', data: {} };
     const playCommand = { type: 'player:play', data: {} };
+    const pauseCommand = { type: 'player:pause', data: {} };
     const setQualityCommand = { type: 'player:changeQuality', data: qualitySetting };
     function createChangeVideoCommand(videoId) {
       return { type: 'player:changeVideo', data: { id: videoId, params: qualitySetting } };
     };
+    const seekForwardCommand = { type: 'player:relativelySeek', data: { time: 10 } };
+    const seekBackCommand = { type: 'player:relativelySeek', data: { time: -10 } };
 
     function sendCommandToVideoPlayer(command) {
       console.log("Send Command:", command);
@@ -218,6 +218,10 @@
           switch (message.data.state) {
             case 'playing':
               setTransitionState(false);
+              isPlaying = true;
+              break;
+            case 'paused':
+              isPlaying = false;
               break;
           }
           break;
@@ -225,6 +229,24 @@
     });
 
     videoPlayerFrame.src = 'https://rutube.ru/play/embed/' + config.playlist[currentVideoIndex];
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        sendCommandToVideoPlayer(seekBackCommand);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        sendCommandToVideoPlayer(seekForwardCommand);
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        if (isPlaying) {
+          sendCommandToVideoPlayer(pauseCommand);
+        } else {
+          sendCommandToVideoPlayer(playCommand);
+        }
+      }
+    }
+    );
   </script>
 </body>
 
