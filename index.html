@@ -181,7 +181,8 @@
         <div id="control-zone-left" class="control-zone control-zone-left">
           <div id="seek-left-icon" class="seek-icon">
             <svg viewBox="0 0 24 24">
-              <path d="M11,18V6L3,12L11,18Z M18,6V18L10,12L18,6Z" />
+              <path d="M11,18V6L3,12L11,18Z" />
+              <path d="M18,6V18L10,12L18,6Z" />
             </svg>
           </div>
         </div>
@@ -189,7 +190,8 @@
         <div id="control-zone-right" class="control-zone control-zone-right">
           <div id="seek-right-icon" class="seek-icon">
             <svg viewBox="0 0 24 24">
-              <path d="M13,6V18L21,12L13,6Z M6,18V6L14,12L6,18Z" />
+              <path d="M13,6V18L21,12L13,6Z" />
+              <path d="M6,18V6L14,12L6,18Z" />
             </svg>
           </div>
         </div>
@@ -294,7 +296,7 @@
         pauseIconTimer = null;
       }
 
-      if (!isPlaying) {
+      if (!isPlaying && hasStartedPlaying) {
         pauseIcon.classList.add('show');
       } else {
         pauseIcon.classList.remove('show');
@@ -318,6 +320,7 @@
 
     var currentVideoIndex = 0;
     var isPlaying = false;
+    var hasStartedPlaying = false;
     const qualitySetting = { quality: '1080' };
 
     const hideControlsCommand = { type: 'player:hideControls', data: {} };
@@ -358,6 +361,7 @@
             case 'playing':
               setTransitionState(false);
               isPlaying = true;
+              hasStartedPlaying = true;
               updatePauseIcon();
               break;
             case 'pause':
