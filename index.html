@@ -237,6 +237,8 @@
     const seekRightIcon = document.getElementById('seek-right-icon');
     const pauseIcon = document.getElementById('pause-icon');
 
+    var videoTransitioning = true;
+
     var transitionTimer;
     var seekLeftIconTimer;
     var seekRightIconTimer;
@@ -244,6 +246,7 @@
 
     function setTransitionState(newState) {
       if (newState) {
+        videoTransitioning = true;
         if (transitionTimer) {
           clearTimeout(transitionTimer);
           transitionTimer = null;
@@ -254,6 +257,7 @@
         loadingSpinner.style.visibility = 'visible';
       }
       else {
+        videoTransitioning = false;
         videoTransitionImage.classList.add('fade-out');
         videoTransitionImage.style.pointerEvents = 'none';
         transitionTimer = setTimeout(() => {
@@ -296,7 +300,7 @@
         pauseIconTimer = null;
       }
 
-      if (!isPlaying && hasStartedPlaying) {
+      if (!isPlaying && !videoTransitioning) {
         pauseIcon.classList.add('show');
       } else {
         pauseIcon.classList.remove('show');
@@ -320,7 +324,6 @@
 
     var currentVideoIndex = 0;
     var isPlaying = false;
-    var hasStartedPlaying = false;
     const qualitySetting = { quality: '1080' };
 
     const hideControlsCommand = { type: 'player:hideControls', data: {} };
@@ -361,7 +364,6 @@
             case 'playing':
               setTransitionState(false);
               isPlaying = true;
-              hasStartedPlaying = true;
               updatePauseIcon();
               break;
             case 'pause':
