@@ -36,10 +36,38 @@
       position: relative;
     }
 
-    #video-player-frame {
+    .video-controls-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      /* set it to 800% when done testing */
+      z-index: 5;
+      display: flex;
+      pointer-events: auto;
+    }
+
+    .control-zone {
+      height: 100%;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .control-zone-left {
+      flex: 1;
+    }
+
+    .control-zone-center {
+      flex: 2;
+    }
+
+    .control-zone-right {
+      flex: 1;
+    }
+
+    #video-player-frame {
+      width: 100%;
+      height: 800%;
       border: none;
       pointer-events: none;
       user-select: none;
@@ -110,6 +138,11 @@
     <div class="letterbox-viewport-constraint">
       <iframe id="video-player-frame" allow="autoplay">
       </iframe>
+      <div class="video-controls-overlay">
+        <div id="control-zone-left" class="control-zone control-zone-left"></div>
+        <div id="control-zone-center" class="control-zone control-zone-center"></div>
+        <div id="control-zone-right" class="control-zone control-zone-right"></div>
+      </div>
       <div id="video-transition" class="video-transition">
         <svg width="86" height="28" viewBox="0 0 86 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -134,6 +167,7 @@
         <div id="loading-spinner" class="loading-spinner"></div>
       </div>
     </div>
+  </div>
   </div>
 
   <script type="module">
@@ -202,7 +236,7 @@
 
       switch (message.type) {
         case 'player:init':
-          //sendCommandToVideoPlayer(hideControlsCommand); // Enable it back when done testing
+          sendCommandToVideoPlayer(hideControlsCommand);
           break;
         case 'player:qualityList':
           sendCommandToVideoPlayer(setQualityCommand);
@@ -220,7 +254,7 @@
               setTransitionState(false);
               isPlaying = true;
               break;
-            case 'paused':
+            case 'pause':
               isPlaying = false;
               break;
           }
@@ -229,6 +263,41 @@
     });
 
     videoPlayerFrame.src = 'https://rutube.ru/play/embed/' + config.playlist[currentVideoIndex];
+
+    function togglePlayPause() {
+      if (isPlaying) {
+        sendCommandToVideoPlayer(pauseCommand);
+      } else {
+        sendCommandToVideoPlayer(playCommand);
+      }
+    }
+
+    function seekBackward() {
+      sendCommandToVideoPlayer(seekBackCommand);
+    }
+
+    function seekForward() {
+      sendCommandToVideoPlayer(seekForwardCommand);
+    }
+
+    document.getElementById('control-zone-left').addEventListener('click', seekBackward);
+    document.getElementById('control-zone-center').addEventListener('click', togglePlayPause);
+    document.getElementById('control-zone-right').addEventListener('click', seekForward);
+
+    document.getElementById('control-zone-left').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      seekBackward();
+    });
+
+    document.getElementById('control-zone-center').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      togglePlayPause();
+    });
+
+    document.getElementById('control-zone-right').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      seekForward();
+    });
 
     document.addEventListener('keydown', function (event) {
       if (event.key === 'ArrowLeft') {
